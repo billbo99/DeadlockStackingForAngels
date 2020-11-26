@@ -1,0 +1,23 @@
+{
+    "name": "DeadlockStackingForAngels",
+    "version": "1.1.0",
+    "factorio_version": "1.1",
+    "title": "Deadlock Stacking For Angels",
+    "author": "billbo99",
+    "homepage": "",
+    "dependencies": [
+        "base",
+        "deadlock-beltboxes-loaders >= 2.4.0",
+        "rusty-locale",
+        "?angelsrefining",
+        "?angelssmelting",
+        "?angelsinfiniteores",
+        "?angelspetrochem",
+        "?angelsbioprocessing",
+        "?angelsexploration",
+        "?angelsindustries",
+        "?ShinyAngelGFX",
+        "(?)DeadlockStackingForBobs"
+    ],
+    "description": "Add stacked items for Angels"
+}
