@@ -10,10 +10,6 @@ local Items = require("migrations.items").items
 local default_beltbox = "basic-transport-belt-beltbox"
 local tech_by_product = {}
 
-local function starts_with(str, start)
-    return str:sub(1, #start) == start
-end
-
 local function dedup_list(data)
     local tmp = {}
     local res = {}
@@ -87,50 +83,12 @@ local function walk_recipes()
     for _, recipe in pairs(data.raw.recipe) do
         if recipe.enabled then
             add_products_from_recipe(recipe, default_beltbox)
-        -- local main_product = rusty_recipes.get_main_product(recipe)
-        -- if main_product then
-        --     if not tech_by_product[main_product.name] then
-        --         tech_by_product[main_product.name] = {type = main_product.type, tech = {}}
-        --         table.insert(tech_by_product[main_product.name].tech, default_beltbox)
-        --     end
-        -- elseif recipe.results then
-        --     log("hmm1 .. " .. recipe.name)
-        --     for _, result in pairs(recipe.results) do
-        --         if result.type and result.type == "item" then
-        --             if not tech_by_product[result.name] then
-        --                 tech_by_product[result.name] = {type = result.type, tech = {}}
-        --                 table.insert(tech_by_product[result.name].tech, default_beltbox)
-        --             end
-        --         end
-        --     end
-        -- else
-        --     log("hmm1 .. " .. recipe.name)
-        -- end
         end
     end
     log("hmm")
     for _, resource in pairs(data.raw.resource) do
         if resource.minable then
             add_products_from_recipe(resource.minable, default_beltbox)
-        -- if resource.minable.result then
-        --     if not tech_by_product[resource.minable.result] then
-        --         tech_by_product[resource.minable.result] = {type = "item", tech = {}}
-        --     end
-        --     table.insert(tech_by_product[resource.minable.result].tech, default_beltbox)
-        --     log(resource.minable.result)
-        -- elseif resource.minable.results then
-        --     for _, result in pairs(resource.minable.results) do
-        --         if result.type == "item" then
-        --             if not tech_by_product[result.name] then
-        --                 tech_by_product[result.name] = {type = result.type, tech = {}}
-        --             end
-        --             table.insert(tech_by_product[result.name].tech, default_beltbox)
-        --             log(result.name)
-        --         end
-        --     end
-        -- else
-        --     log("hmm2 .. " .. recipe.name)
-        -- end
         end
     end
     log("hmm")
@@ -143,17 +101,19 @@ local function walk_recipes()
 end
 
 local function add_item_to_tech(name, tech)
-    local recipes = {}
-    for _, effect in pairs(data.raw.technology[tech].effects) do
-        if effect.type == "unlock-recipe" then
-            recipes[effect.recipe] = true
+    if data.raw.technology[tech] then
+        local recipes = {}
+        for _, effect in pairs(data.raw.technology[tech].effects) do
+            if effect.type == "unlock-recipe" then
+                recipes[effect.recipe] = true
+            end
         end
-    end
-    if not recipes[string.format("deadlock-stacks-stack-%s", name)] then
-        table.insert(data.raw.technology[tech].effects, {type = "unlock-recipe", recipe = string.format("deadlock-stacks-stack-%s", name)})
-    end
-    if not recipes[string.format("deadlock-stacks-unstack-%s", name)] then
-        table.insert(data.raw.technology[tech].effects, {type = "unlock-recipe", recipe = string.format("deadlock-stacks-unstack-%s", name)})
+        if not recipes[string.format("deadlock-stacks-stack-%s", name)] then
+            table.insert(data.raw.technology[tech].effects, {type = "unlock-recipe", recipe = string.format("deadlock-stacks-stack-%s", name)})
+        end
+        if not recipes[string.format("deadlock-stacks-unstack-%s", name)] then
+            table.insert(data.raw.technology[tech].effects, {type = "unlock-recipe", recipe = string.format("deadlock-stacks-unstack-%s", name)})
+        end
     end
 end
 
@@ -176,13 +136,11 @@ local function main()
             item_type = item.type
         end
 
-        log(string.format("%s -- %s", item_type, name))
         if data.raw[item_type][name] then
-            if data.raw.item["deadlock-stack-" .. name] then
-                deadlock.destroy_stack(name)
-            end
+            -- if data.raw.item["deadlock-stack-" .. name] then
+            --     deadlock.destroy_stack(name)
+            -- end
 
-            log(string.format("%s -- %s", name, techs[1]))
             if data.raw[item_type][name].icons then
                 for _, layer in pairs(data.raw[item_type][name].icons) do
                     if not layer.icon_size and data.raw[item_type][name].icon_size then
@@ -190,10 +148,14 @@ local function main()
                     end
                 end
             end
-            deadlock.add_stack(name, icon, techs[1], icon_size, item_type)
-            if #techs > 1 then
-                for i = 2, #techs do
-                    add_item_to_tech(name, techs[i])
+            if data.raw.item["deadlock-stack-" .. name] then
+                add_item_to_tech(name, techs[1])
+            else
+                deadlock.add_stack(name, icon, techs[1], icon_size, item_type)
+                if #techs > 1 then
+                    for i = 2, #techs do
+                        add_item_to_tech(name, techs[i])
+                    end
                 end
             end
         else
@@ -205,3 +167,61 @@ end
 walk_technology()
 walk_recipes()
 main()
+
+-- multiply a number with a unit (kJ, kW etc) at the end
+local function multiply_number_unit(property, mult)
+    local value, unit
+    value = string.match(property, "%d+")
+    if string.match(property, "%d+%.%d+") then -- catch floats
+        value = string.match(property, "%d+%.%d+")
+    end
+    unit = string.match(property, "%a+")
+    if unit == nil then
+        return value * mult
+    else
+        return ((value * mult) .. unit)
+    end
+end
+
+local function starts_with(str, start)
+    return str:sub(1, #start) == start
+end
+
+-- Angles does some processing at in the  data-final-fixes to change ingredients of recipes,  need to update stacking/unstacking recipes to follow suit
+-- for recipe, recipe_table in pairs(data.raw.recipe) do
+--     if starts_with(recipe, "deadlock-stacks-stack-") then
+--         log(serpent.block(recipe_table))
+--         local src = recipe_table.ingredients[1].name or recipe_table.ingredients[1][1] or nil
+--         if recipe_table.result ~= "deadlock-stack-" .. src and data.raw.item["deadlock-stack-" .. src] then
+--             -- if src and recipe_table.result ~= "deadlock-stack-" .. src then
+--             recipe_table.result = "deadlock-stack-" .. src
+--         end
+--     end
+--     if starts_with(recipe, "deadlock-stacks-unstack-") then
+--         log(serpent.block(recipe_table))
+--         local src = recipe_table.ingredients[1].name or recipe_table.ingredients[1][1] or nil
+--         if src ~= "deadlock-stack-" .. recipe_table.result then
+--             -- if src and src ~= "deadlock-stack-" .. recipe_table.result then
+--             recipe_table.result = string.sub(src, 16)
+--         end
+--     end
+-- end
+
+-- lastly fix any fuel values
+local deadlock_stack_size = settings.startup["deadlock-stack-size"].value
+for item, item_table in pairs(data.raw.item) do
+    if starts_with(item, "deadlock-stack-") then
+        local parent = data.raw.item[string.sub(item, 16)]
+        if parent and parent.fuel_value then
+            item_table.fuel_value = multiply_number_unit(parent.fuel_value, deadlock_stack_size)
+            item_table.fuel_category = parent.fuel_category
+            item_table.fuel_acceleration_multiplier = parent.fuel_acceleration_multiplier
+            item_table.fuel_top_speed_multiplier = parent.fuel_top_speed_multiplier
+            item_table.fuel_emissions_multiplier = parent.fuel_emissions_multiplier
+
+            if parent.burnt_result and data.raw.item["deadlock-stack-" .. parent.burnt_result] then
+                item_table.burnt_result = "deadlock-stack-" .. parent.burnt_result
+            end
+        end
+    end
+end
