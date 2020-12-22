@@ -328,6 +328,7 @@ local angels = {
     "filter-ceramic",
     "filter-ceramic-used",
     "filter-coal",
+    "filter-charcoal",
     "filter-frame",
     "filter-lime",
     "filter-lime-used",
