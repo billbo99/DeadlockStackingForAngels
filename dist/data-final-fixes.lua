@@ -187,27 +187,7 @@ local function starts_with(str, start)
     return str:sub(1, #start) == start
 end
 
--- Angles does some processing at in the  data-final-fixes to change ingredients of recipes,  need to update stacking/unstacking recipes to follow suit
--- for recipe, recipe_table in pairs(data.raw.recipe) do
---     if starts_with(recipe, "deadlock-stacks-stack-") then
---         log(serpent.block(recipe_table))
---         local src = recipe_table.ingredients[1].name or recipe_table.ingredients[1][1] or nil
---         if recipe_table.result ~= "deadlock-stack-" .. src and data.raw.item["deadlock-stack-" .. src] then
---             -- if src and recipe_table.result ~= "deadlock-stack-" .. src then
---             recipe_table.result = "deadlock-stack-" .. src
---         end
---     end
---     if starts_with(recipe, "deadlock-stacks-unstack-") then
---         log(serpent.block(recipe_table))
---         local src = recipe_table.ingredients[1].name or recipe_table.ingredients[1][1] or nil
---         if src ~= "deadlock-stack-" .. recipe_table.result then
---             -- if src and src ~= "deadlock-stack-" .. recipe_table.result then
---             recipe_table.result = string.sub(src, 16)
---         end
---     end
--- end
-
--- lastly fix any fuel values
+-- fix any fuel values
 local deadlock_stack_size = settings.startup["deadlock-stack-size"].value
 for item, item_table in pairs(data.raw.item) do
     if starts_with(item, "deadlock-stack-") then
@@ -223,5 +203,16 @@ for item, item_table in pairs(data.raw.item) do
                 item_table.burnt_result = "deadlock-stack-" .. parent.burnt_result
             end
         end
+    end
+end
+
+if settings.startup["angels-enable-components"] and settings.startup["angels-enable-components"].value then
+    local stack = data.raw.recipe["deadlock-stacks-stack-iron-gear-wheel"]
+    if stack.ingredients[1].name == "mechanical-parts" then
+        stack.ingredients[1].name = "iron-gear-wheel"
+    end
+    local unstack = data.raw.recipe["deadlock-stacks-unstack-iron-gear-wheel"]
+    if unstack.result == "mechanical-parts" then
+        unstack.result = "iron-gear-wheel"
     end
 end
