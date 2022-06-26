@@ -1,4 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.8
+Date: 2022.06.26
+  Changes:
+    - Hide stacked items if source item is also hidden,  to stop dupliate stacked items appearing in selection filters
+---------------------------------------------------------------------------------------------------
+Version: 1.1.7
+Date: 2022.06.19
+  Changes:
+    - More fixes for component mode
+---------------------------------------------------------------------------------------------------
+Version: 1.1.6
+Date: 2022.06.17
+  Changes:
+    - More fixes for component mode
+---------------------------------------------------------------------------------------------------
 Version: 1.1.5
 Date: 2022.06.07
   Changes:

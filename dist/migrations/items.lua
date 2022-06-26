@@ -661,6 +661,7 @@ local AngelsComponents = {
     "block-bprocessing-3",
     "block-bprocessing-4",
     "block-bprocessing-5",
+    "block-construction-0",
     "block-construction-1",
     "block-construction-2",
     "block-construction-3",

@@ -117,6 +117,15 @@ local function add_item_to_tech(name, tech)
     end
 end
 
+local function fix_ingredient(part, ingredient)
+    if part[1] and part[1] ~= ingredient then
+        part[1] = ingredient
+    end
+    if part.name and part.name ~= ingredient then
+        part.name = ingredient
+    end
+end
+
 local function main()
     --Add stacking recipes
     for name, item in pairs(Items) do
@@ -137,9 +146,7 @@ local function main()
         end
 
         if data.raw[item_type][name] then
-            -- if data.raw.item["deadlock-stack-" .. name] then
-            --     deadlock.destroy_stack(name)
-            -- end
+            log(item_type .. " " .. name)
 
             if data.raw[item_type][name].icons then
                 for _, layer in pairs(data.raw[item_type][name].icons) do
@@ -148,7 +155,16 @@ local function main()
                     end
                 end
             end
+
+            -- fix recipe if someone has change ingredients
             if data.raw.item["deadlock-stack-" .. name] then
+                local stack = data.raw.recipe["deadlock-stacks-stack-" .. name]
+                local unstack = data.raw.recipe["deadlock-stacks-unstack-" .. name]
+                if stack and stack.normal and stack.normal.ingredients and stack.normal.ingredients[1] then fix_ingredient(stack.normal.ingredients[1], name) end
+                if stack and stack.expensive and stack.expensive.ingredients and stack.expensive.ingredients[1] then fix_ingredient(stack.expensive.ingredients[1], name) end
+                if stack and stack.ingredients and stack.ingredients[1] then fix_ingredient(stack.ingredients[1], name) end
+                if unstack and unstack.result and unstack.result ~= name then unstack.result = name end
+
                 add_item_to_tech(name, techs[1])
             else
                 deadlock.add_stack(name, icon, techs[1], icon_size, item_type)
@@ -158,6 +174,11 @@ local function main()
                     end
                 end
             end
+
+            if data.raw[item_type][name].flags then
+                data.raw.item["deadlock-stack-" .. name].flags = data.raw[item_type][name].flags
+            end
+
         else
             log("not found ... data.raw[" .. item_type .. "][" .. name .. "]")
         end
@@ -203,16 +224,5 @@ for item, item_table in pairs(data.raw.item) do
                 item_table.burnt_result = "deadlock-stack-" .. parent.burnt_result
             end
         end
-    end
-end
-
-if settings.startup["angels-enable-components"] and settings.startup["angels-enable-components"].value then
-    local stack = data.raw.recipe["deadlock-stacks-stack-iron-gear-wheel"]
-    if stack.ingredients[1].name == "mechanical-parts" then
-        stack.ingredients[1].name = "iron-gear-wheel"
-    end
-    local unstack = data.raw.recipe["deadlock-stacks-unstack-iron-gear-wheel"]
-    if unstack.result == "mechanical-parts" then
-        unstack.result = "iron-gear-wheel"
     end
 end
