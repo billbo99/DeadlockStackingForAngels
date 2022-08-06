@@ -540,7 +540,7 @@ local angels = {
     "temperate-3-seed-dormant",
     "temperate-4",
     "temperate-4-seed",
-    "temperate-5-seed-dormant",
+    "temperate-4-seed-dormant",
     "temperate-5",
     "temperate-5-seed",
     "temperate-5-seed-dormant",
@@ -811,7 +811,7 @@ local AngelsComponents = {
     "weapon-parts"
 }
 
-local Items = {items = {}}
+local Items = { items = {} }
 
 for _, item in pairs(vanilla) do
     Items.items[item] = {}
@@ -836,17 +836,17 @@ if Items.items["token-bio"] then
 end
 
 -- ammo
-for _, item in pairs({"shotgun-shell", "piercing-shotgun-shell", "firearm-magazine", "piercing-rounds-magazine", "uranium-rounds-magazine", "land-mine"}) do
-    Items.items[item] = {type = "ammo"}
+for _, item in pairs({ "shotgun-shell", "piercing-shotgun-shell", "firearm-magazine", "piercing-rounds-magazine", "uranium-rounds-magazine", "land-mine" }) do
+    Items.items[item] = { type = "ammo" }
 end
 
 -- capsule
-for _, item in pairs({"grenade", "cluster-grenade", "slowdown-capsule", "poison-capsule"}) do
-    Items.items[item] = {type = "capsule"}
+for _, item in pairs({ "grenade", "cluster-grenade", "slowdown-capsule", "poison-capsule" }) do
+    Items.items[item] = { type = "capsule" }
 end
 
 -- rail-planner
-Items.items["rail"] = {type = "rail-planner"}
+Items.items["rail"] = { type = "rail-planner" }
 
 -- module
 for _, item in pairs(
@@ -865,12 +865,12 @@ for _, item in pairs(
         "angels-bio-yield-module-3"
     }
 ) do
-    Items.items[item] = {type = "module"}
+    Items.items[item] = { type = "module" }
 end
 
 -- tool
-for _, item in pairs({"automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack", "production-science-pack", "utility-science-pack", "space-science-pack"}) do
-    Items.items[item] = {type = "tool"}
+for _, item in pairs({ "automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack", "production-science-pack", "utility-science-pack", "space-science-pack" }) do
+    Items.items[item] = { type = "tool" }
 end
 
 return Items
